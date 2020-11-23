@@ -1,0 +1,121 @@
+Riferimento :
+DJANGO: WEB SERVICE REST IN 40 MINUTI!! di Prof. Andrea Pollini
+https://www.youtube.com/watch?v=LkbaQIR7xrc&t=779s  
+
+Creo una directory di lavoro djrest:
+mkdir django rest framework
+Creo un ambiente virtuale (venv) virtual enviroment: 
+python3 -m venv venv
+Attivo il venv :
+source venv/bin/activate
+(venv) Aziz:djrest
+
+Aggiorno l'ambiente :
+pip install --upgrade pip
+pip install ipython # shell evoluta
+
+Installo django e djangorestframework:
+pip install django
+pip install djangorestframework
+
+Creao un nuovo progetto :
+cd 'django rest framework'
+django-admin startproject djrest
+Creo l'app wrets:
+cd djrest/
+django-admin startapp wrest
+
+Inizializzo il progetto :
+python manage.py migrate
+
+Creo l'utente administratore:
+
+python manage.py createsuperuser --username admin
+Email address: a.a@a.com
+Password: 1234
+Password (again): 1234
+This password is too short. It must contain at least 8 characters.
+This password is too common.
+This password is entirely numeric.
+Bypass password validation and create user anyway? [y/N]: y
+Superuser created successfully.
+
+Includo l'app nel progetto:
+
+Edito djrest/settings.py , che corrisponde al file di configurazione del progetto
+
+Aggiungo il framework djangorestframework e l'app wrest:
+
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'rest_framework',
+    'wrest.apps.WrestConfig',
+]
+
+Eseguo una migrazione :
+python manage.py migrate
+
+aggiungo la classe dafare in wrest/models.py
+
+class dafare(models.Model):
+    titolo= models.CharField(max_length=256)
+    fatto= models.BooleanField()
+
+
+Creo la migrazione di wrest:
+python manage.py makemigrations wrest
+Migrations for 'wrest':
+  wrest/migrations/0001_initial.py
+    - Create model dafare
+
+Eseguo la migrazione :
+python manage.py migrate
+
+Creo il serializzatore per il modello dafare creando il file wrest/serializers.py 
+Utilizo del ModelSerialized
+
+from rest_framework import serializers
+from .models import dafare
+
+class dafareSerializer(serializers.Serializer):
+    class Meta:
+        model= dafare
+        fields=['id','titolo','fatto']
+
+Creo la vista usando il file view.py
+
+from django.shortcuts import render
+from django.http import JsonResponse
+from .models import dafare
+from .serializers import dafareSerializer
+# Create your views here.
+
+def dafare_list(request):
+    d = dafare.objects.all()
+    s=dafareSerializer(d, many=True)
+    return JsonResponse(s.data, safe=False)
+
+Aggungo il nuovo url nel file djrest/url.py
+
+from django.contrib import admin
+from django.urls import path
+from wrest.views import dafare_list
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path("dafare/", dafare_list)
+
+]
+
+Eseguo il server di sviluppo:
+python manage.py runserver
+
+Testo l'app al link http://127.0.0.1:8000/dafare/
+
+
+
